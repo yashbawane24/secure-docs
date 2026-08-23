@@ -1,0 +1,12 @@
+CUSTOMER SUPPORT INCIDENT & LOG EXPORT — INC-4091
+
+Incident Date: August 5, 2026
+Reported By: Alex Rivera (DevOps Engineer)
+
+Affected Customer Contact Details:
+- Customer 1: Johnathan Doe, Email: john.doe@partner-enterprise.com, Phone: +1 (555) 019-9921
+- Customer 2: Priya Sharma, Email: priya.sharma@fintech.io, Phone: +1 (555) 012-3344
+- Customer 3: Robert Smith, Credit Card Last 4: 4532 (Full Card on Record: 4532890123456789)
+
+Error Log Traceback:
+[ERROR] PaymentGatewayTimeout: Failed to reach credit card authorization service for Account #: 981273981273.

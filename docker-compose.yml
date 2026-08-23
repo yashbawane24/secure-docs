@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: securedocs-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: securedocs
+      POSTGRES_PASSWORD: securedocs_secret_pass
+      POSTGRES_DB: securedocs_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: securedocs-backend
+    restart: always
+    ports:
+      - "5001:5001"
+    environment:
+      PORT: 5001
+      DATABASE_URL: "postgresql://securedocs:securedocs_secret_pass@postgres:5432/securedocs_db?schema=public"
+      JWT_SECRET: "securedocs_super_secret_jwt_key_2026"
+      NODE_ENV: development
+    depends_on:
+      - postgres
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: securedocs-frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

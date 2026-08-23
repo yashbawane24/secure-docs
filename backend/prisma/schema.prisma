@@ -1,0 +1,100 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String      @id @default(uuid())
+  name         String
+  email        String      @unique
+  passwordHash String
+  role         String      @default("EMPLOYEE") // EMPLOYEE, MANAGER, ADMIN, EXTERNAL_CLIENT
+  trustLevel   Int         @default(75)         // 0 to 100
+  orgId        String      @default("org-default")
+  createdAt    DateTime    @default(now())
+
+  documents    Document[]  @relation("OwnerDocuments")
+  sentShares   Share[]     @relation("SenderShares")
+  receivedShares Share[]   @relation("RecipientShares")
+  auditLogs    AuditLog[]  @relation("ActorAuditLogs")
+}
+
+model Document {
+  id                String           @id @default(uuid())
+  ownerId           String
+  owner             User             @relation("OwnerDocuments", fields: [ownerId], references: [id], onDelete: Cascade)
+  title             String
+  filename          String
+  fileSize          Int
+  mimeType          String
+  storagePath       String
+  extractedText     String?
+  classification    String           @default("INTERNAL") // PUBLIC, INTERNAL, CONFIDENTIAL, HIGHLY_CONFIDENTIAL
+  leakScore         Int              @default(0)          // 0 to 100
+  recommendedAction String           @default("ALLOW")    // ALLOW, ENCRYPT, WATERMARK, RESTRICT_DOWNLOAD, REQUIRE_APPROVAL, BLOCK
+  isEncrypted       Boolean          @default(false)
+  encryptionIV      String?
+  authTag           String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  entities          DocumentEntity[]
+  shares            Share[]
+  auditLogs         AuditLog[]
+}
+
+model DocumentEntity {
+  id            String   @id @default(uuid())
+  documentId    String
+  document      Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  entityType    String   // AADHAAR, PAN, PASSPORT, BANK_ACCOUNT, CREDIT_CARD, EMAIL, PHONE, API_KEY, PASSWORD, SSN
+  maskedValue   String
+  confidence    Float    @default(0.95)
+  locationCount Int      @default(1)
+  createdAt     DateTime @default(now())
+}
+
+model Share {
+  id              String   @id @default(uuid())
+  documentId      String
+  document        Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  senderId        String
+  sender          User     @relation("SenderShares", fields: [senderId], references: [id], onDelete: Cascade)
+  recipientId     String
+  recipient       User     @relation("RecipientShares", fields: [recipientId], references: [id], onDelete: Cascade)
+  permissionLevel String   @default("VIEW_ONLY") // VIEW_ONLY, DOWNLOAD_EDIT, TIME_LIMITED, DENIED
+  expiresAt       DateTime?
+  status          String   @default("ACTIVE")    // ACTIVE, REVOKED, EXPIRED, SUSPICIOUS_DOWNGRADE
+  accessCount     Int      @default(0)
+  lastAccessedAt  DateTime?
+  createdAt       DateTime @default(now())
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  actorId      String?
+  actor        User?    @relation("ActorAuditLogs", fields: [actorId], references: [id], onDelete: SetNull)
+  documentId   String?
+  document     Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  action       String   // UPLOAD, VIEW, DOWNLOAD, SHARE, ENCRYPT, DECRYPT, WATERMARK, POLICY_TRIGGER, ANOMALY_DOWNGRADE
+  metadataJson String?
+  ipAddress    String   @default("127.0.0.1")
+  createdAt    DateTime @default(now())
+}
+
+model SecurityPolicy {
+  id               String   @id @default(uuid())
+  orgId            String   @default("org-default")
+  name             String
+  minLeakScore     Int
+  maxLeakScore     Int
+  action           String   // ALLOW, ENCRYPT, WATERMARK, RESTRICT_DOWNLOAD, REQUIRE_APPROVAL, BLOCK
+  description      String
+  isEditable       Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}

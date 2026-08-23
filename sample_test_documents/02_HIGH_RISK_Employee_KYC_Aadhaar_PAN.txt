@@ -1,0 +1,16 @@
+STRICTLY CONFIDENTIAL — EMPLOYEE KYC & BANKING REGISTER 2026
+
+1. Employee Name: Sarah Chen
+   Aadhaar Number: 3672 8901 2345
+   PAN Card: ABCDE1234F
+   Bank Name: HDFC Bank
+   Account #: 987654321098
+   IFSC Code: HDFC0001234
+
+2. Employee Name: Rajesh Verma
+   Aadhaar Number: 9821 4567 1123
+   PAN Card: FGHIJ5678K
+   Bank Account: Account #: 453289012345
+   IFSC Code: ICIC0005678
+
+Note: Do not distribute outside HR and Legal Compliance teams.

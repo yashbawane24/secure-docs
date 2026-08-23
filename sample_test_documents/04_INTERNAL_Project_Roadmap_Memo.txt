@@ -1,0 +1,9 @@
+INTERNAL MEMO: Q3-Q4 PRODUCT ROADMAP & ARCHITECTURE
+
+Team,
+Here is our internal engineering roadmap for H2 2026:
+- Sprint 1: Migrate AI Entity Detection to WebAssembly Workers.
+- Sprint 2: Enhance Dynamic Watermarking with Canvas Cryptographic Signatures.
+- Sprint 3: Add Enterprise SAML/Okta Single Sign-On.
+
+For questions, reach out to dev-team@securedocs.ai. Internal distribution only.

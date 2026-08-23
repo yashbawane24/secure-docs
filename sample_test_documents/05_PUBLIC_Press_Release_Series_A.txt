@@ -1,0 +1,9 @@
+FOR IMMEDIATE RELEASE
+
+SecureDocs AI Raises $12M Series A Funding to Revolutionize Adaptive Document Security
+
+SAN FRANCISCO, CA — SecureDocs AI, the leading provider of context-aware data leakage prevention, today announced $12M in Series A funding led by Horizon Ventures.
+
+The platform provides intelligent entity detection, composite leak score predictions, and context-driven dynamic watermarking for enterprise organizations worldwide.
+
+For media inquiries, please visit https://securedocs.ai or contact press@securedocs.ai.
