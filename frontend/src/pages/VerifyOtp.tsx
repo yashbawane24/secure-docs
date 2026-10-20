@@ -10,8 +10,14 @@ export const VerifyOtp: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const email = location.state?.email || 'admin@securedocs.ai';
+  const email = location.state?.email || '';
   const mockOtpBanner = location.state?.mockOtpBanner || '';
+
+  React.useEffect(() => {
+    if (!email) {
+      navigate('/login', { replace: true });
+    }
+  }, [email, navigate]);
 
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');

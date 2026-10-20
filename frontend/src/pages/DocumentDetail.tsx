@@ -53,9 +53,31 @@ export const DocumentDetail: React.FC = () => {
     }
   };
 
-  const handleDownload = () => {
+  const [downloadingEncrypted, setDownloadingEncrypted] = useState(false);
+  const [downloadingDecrypted, setDownloadingDecrypted] = useState(false);
+
+  const handleDownloadEncrypted = async () => {
     if (!id) return;
-    window.open(`/api/documents/${id}/download`, '_blank');
+    try {
+      setDownloadingEncrypted(true);
+      await api.downloadDocument(id, 'encrypted');
+    } catch (err: any) {
+      alert(err.message || 'Encrypted download failed');
+    } finally {
+      setDownloadingEncrypted(false);
+    }
+  };
+
+  const handleDownloadDecrypted = async () => {
+    if (!id) return;
+    try {
+      setDownloadingDecrypted(true);
+      await api.downloadDocument(id, 'decrypted');
+    } catch (err: any) {
+      alert(err.message || 'Decrypted download failed');
+    } finally {
+      setDownloadingDecrypted(false);
+    }
   };
 
   if (loading) return <div className="text-center py-12 text-slate-400">Loading document detail...</div>;
@@ -64,20 +86,34 @@ export const DocumentDetail: React.FC = () => {
   return (
     <div className="p-8 space-y-8 max-w-7xl mx-auto">
       {/* Top Header Navigation */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
         <Link to="/documents" className="flex items-center gap-2 text-xs text-slate-400 hover:text-cyan-400 transition-colors">
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Document Library</span>
         </Link>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Primary Download Button: AES-256 Encrypted */}
           <button
-            onClick={handleDownload}
-            disabled={doc.recommendedAction === 'BLOCK'}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-500/30 text-xs font-bold transition-all disabled:opacity-40"
+            onClick={handleDownloadEncrypted}
+            disabled={downloadingEncrypted}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-navy-900 font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all disabled:opacity-50 cursor-pointer"
+            title="Download protected AES-256 Encrypted Security Envelope (PDF)"
+          >
+            <Lock className="w-4 h-4" />
+            <Download className="w-4 h-4" />
+            <span>{downloadingEncrypted ? 'Generating Encrypted PDF...' : 'Download Encrypted (PDF)'}</span>
+          </button>
+
+          {/* Secondary Download Button: Decrypted (if allowed) */}
+          <button
+            onClick={handleDownloadDecrypted}
+            disabled={doc.recommendedAction === 'BLOCK' || downloadingDecrypted}
+            title={doc.recommendedAction === 'BLOCK' ? 'Plaintext download blocked by Policy HC-900' : 'Download original decrypted document'}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Download className="w-4 h-4" />
-            <span>Download Decrypted Document</span>
+            <span>{downloadingDecrypted ? 'Decrypting...' : 'Download Decrypted'}</span>
           </button>
         </div>
       </div>

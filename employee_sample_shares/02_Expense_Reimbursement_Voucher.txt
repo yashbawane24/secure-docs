@@ -1,0 +1,29 @@
+\\EMPLOYEE EXPENSE REIMBURSEMENT CLAIM FORM
+Document ID: EXP-2026-0894
+Filing Date: September 15, 2026
+Employee Name: Sarah Chen
+Designation: Senior Developer
+Department: Engineering
+Manager Reviewer: Marcus Vance (manager@securedocs.ai)
+
+SECTION A: EXPENSE SUMMARY
+1. Client Technical Workshop Travel (Bangalore to Mumbai):
+   - Flight Booking (Air India AI-804): INR 12,450
+   - Hotel Accommodation (The Westin): INR 18,900
+   - Local Conveyance / Uber: INR 2,340
+2. AWS Cloud Certification Exam Voucher:
+   - Solutions Architect Professional: INR 24,500
+Total Claim Amount: INR 58,190
+
+SECTION B: SENSITIVE EMPLOYEE BANKING DETAILS (FOR DIRECT DEPOSIT)
+Beneficiary Name: Sarah Chen
+Bank Name: HDFC Bank Ltd.
+Branch: Indiranagar, Bangalore
+Account Number: 50100234891278
+IFSC Code: HDFC0001234
+Permanent Account Number (PAN): BDFPC9812K
+Aadhaar UID: 9812 4321 8765
+
+DECLARATION:
+I hereby confirm that the expenses incurred above were solely for official business activities. Receipts and digital invoices are attached.
+Signature: Sarah Chen (Digitally Certified)

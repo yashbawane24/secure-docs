@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, Search, Upload, Lock, ShieldAlert, CheckCircle2, ChevronRight, X } from 'lucide-react';
+import { FileText, Search, Upload, Lock, ShieldAlert, CheckCircle2, ChevronRight, X, Download } from 'lucide-react';
 import { api } from '../services/api';
 import { DocumentItem } from '../types';
 import { ProcessingPipeline } from '../components/ProcessingPipeline';
@@ -154,13 +154,31 @@ export const Documents: React.FC = () => {
               <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
                 <span className="text-[10px] text-slate-500">Action: <strong className="text-cyan-400">{doc.recommendedAction}</strong></span>
 
-                <Link
-                  to={`/documents/${doc.id}`}
-                  className="flex items-center gap-1 text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition-colors"
-                >
-                  <span>Details & Controls</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      try {
+                        await api.downloadDocument(doc.id, 'encrypted');
+                      } catch (err: any) {
+                        alert(err.message || 'Download failed');
+                      }
+                    }}
+                    title="Download AES-256 Encrypted Security Envelope (PDF)"
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-[11px] font-semibold transition-all cursor-pointer"
+                  >
+                    <Lock className="w-3 h-3" />
+                    <span>PDF</span>
+                  </button>
+
+                  <Link
+                    to={`/documents/${doc.id}`}
+                    className="flex items-center gap-1 text-xs font-semibold text-slate-300 hover:text-cyan-400 transition-colors"
+                  >
+                    <span>Details</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
               </div>
             </div>
           ))}

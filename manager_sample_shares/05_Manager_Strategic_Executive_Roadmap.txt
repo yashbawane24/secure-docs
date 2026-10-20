@@ -1,0 +1,26 @@
+STRICTLY CONFIDENTIAL - EXECUTIVE LEADERSHIP STRATEGY MEMO
+Document Code: STRAT-ROADMAP-2027-H1
+Distribution: Elena Rostova (Admin), Marcus Vance (Manager), Kavita Patel (Legal)
+Classification: HIGHLY CONFIDENTIAL
+Notice: Unlawful distribution or leakage subjects violator to legal prosecution.
+
+STRATEGIC VISION & H1 2027 PRODUCT OBJECTIVES:
+
+1. Zero-Knowledge Proof (ZKP) Document Attestation:
+   - Introduce cryptographic zero-knowledge verifications allowing clients to prove compliance without exposing unredacted document payloads.
+   - Lead Partner: Global Banking Consortium.
+
+2. On-Premise Air-Gapped Appliance Edition:
+   - Target Market: Defense contractors, Federal healthcare institutions.
+   - Requirement: Local offline NLP inference with zero outbound internet telemetry.
+
+3. Automated Regulatory Reporting (EU DORA & GDPR Article 33):
+   - One-click regulatory audit packet generation upon PII data leakage incidents.
+   - Integrations planned with ServiceNow GRC and Archer IRM.
+
+4. M&A Technical Due Diligence Assessment:
+   - Early exploratory analysis regarding acquisition of CloudLock MicroSystems for $14.5M cash/equity blend.
+   - Preliminary code scan shows 94% compatibility with our AES-256 buffer pipelines.
+
+SECURITY DIRECTIVE:
+All documents related to Project Horizon and M&A targets must have Watermarking set to MANDATORY and Download Permissions restricted to TIME_LIMITED (max 24 hours).

@@ -15,7 +15,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'securedocs_super_secret_jwt_key_20
 
 export function authenticateToken(req: AuthRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const token = (authHeader && authHeader.split(' ')[1]) || (req.query.token as string);
 
   if (!token) {
     return res.status(401).json({ error: 'Authentication required. No token provided.' });

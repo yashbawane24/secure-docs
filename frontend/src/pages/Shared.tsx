@@ -59,7 +59,7 @@ export const Shared: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                   <Link
                     to={`/documents/${share.documentId}`}
                     className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-bold transition-all"
@@ -68,16 +68,39 @@ export const Shared: React.FC = () => {
                     <span>View Watermarked Preview</span>
                   </Link>
 
+                  {/* Primary Encrypted Download Button */}
+                  <button
+                    onClick={async () => {
+                      try {
+                        await api.downloadDocument(share.documentId, 'encrypted');
+                      } catch (err: any) {
+                        alert(err.message || 'Encrypted download failed');
+                      }
+                    }}
+                    title="Download AES-256 Encrypted Security Envelope (PDF)"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-navy-900 font-bold text-xs shadow-md shadow-cyan-500/20 transition-all cursor-pointer"
+                  >
+                    <Lock className="w-3.5 h-3.5" />
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download Encrypted (PDF)</span>
+                  </button>
+
+                  {/* Optional Decrypted Download if authorized */}
                   {share.permissionLevel === 'DOWNLOAD_EDIT' && (
-                    <a
-                      href={`/api/documents/${share.documentId}/download`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500 text-navy-900 font-bold text-xs shadow-md transition-all"
+                    <button
+                      onClick={async () => {
+                        try {
+                          await api.downloadDocument(share.documentId, 'decrypted');
+                        } catch (err: any) {
+                          alert(err.message || 'Decrypted download failed');
+                        }
+                      }}
+                      title="Download Plaintext Decrypted Original"
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold transition-all"
                     >
                       <Download className="w-3.5 h-3.5" />
-                      <span>Download</span>
-                    </a>
+                      <span>Decrypted Original</span>
+                    </button>
                   )}
                 </div>
               </div>

@@ -1,0 +1,30 @@
+INTERNAL SECURITY INCIDENT INVESTIGATION REPORT
+Incident Reference: SEC-INC-2026-0914
+Incident Classification: HIGH SEVERITY (P1)
+Investigating Lead: Marcus Vance (Security Manager)
+Technical Forensic Analyst: Alex Rivera (DevOps Engineer)
+Date of Incident: September 14, 2026
+Status: CONTAINED & RESOLVED
+
+1. EXECUTIVE SUMMARY:
+On September 14 at 14:22 UTC, an anomalous document transfer was flagged by the SecureDocs AI Adaptive Leak Prevention Engine. An employee attempt was detected sharing an unencrypted spreadsheet containing 120 customer records with an external contractor email.
+
+2. AFFECTED SENSITIVE ASSETS:
+- Customer PII Records: 120 customer names, email addresses, and phone numbers.
+- Credit Card Tokens: 14 masked records (Last 4 digits on record).
+- Impacted File: "Customer_Billing_Reconciliation_Q3.xlsx"
+
+3. AUTOMATED POLICY MITIGATION TRIGGERED:
+- The AI Engine calculated a Leak Probability Score of 88%.
+- Recommended Policy Action "BLOCK" was immediately enforced by the system.
+- Direct external download was blocked; file was quarantined into AES-256 encrypted buffer storage.
+- Anomaly downgrade event was registered against the sender's account audit log.
+
+4. REMEDIATION & CORRECTIVE ACTIONS:
+- Quarantined file was successfully scrubbed and sensitive PII redacted.
+- Employee underwent mandatory refresher training on Document Handling Policy.
+- Sharing permissions with external domain @partner.com were restricted to VIEW_ONLY with 48-hour auto-expiration.
+
+Report Submitted To:
+Elena Rostova (VP of Engineering / Admin)
+Kavita Patel (Legal & Compliance Counsel)

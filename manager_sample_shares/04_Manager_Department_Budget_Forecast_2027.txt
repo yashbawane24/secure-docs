@@ -1,0 +1,30 @@
+DEPARTMENT ANNUAL BUDGET ALLOCATION & FORECAST (FY 2027)
+Department: Security Operations & Core Engineering
+Budget Owner: Marcus Vance (Security Manager)
+Finance Controller: Priya Sharma (Finance Lead)
+Approved By: Elena Rostova (Admin / Executive Leadership)
+Total Allocated Budget: $2,850,000 USD
+
+EXPENDITURE BREAKDOWN:
+
+1. Personnel & Headcount Expansion ($1,650,000):
+   - Existing Engineering Team Salaries: $1,150,000
+   - Planned New Hires (2 Senior Security Engineers, 1 ML Scientist): $420,000
+   - Training & Certifications (CISSP, CISA, AWS Specialty): $80,000
+
+2. Cloud Infrastructure & Compute ($680,000):
+   - AWS Production Cluster (EC2, EKS, RDS PostgreSQL, KMS HSM): $480,000
+   - AI Inference GPU Compute (NVIDIA A10G instances for NLP scanner): $140,000
+   - Multi-region Disaster Recovery & Cold S3 Archival: $60,000
+
+3. Security Software & Tooling Subscriptions ($380,000):
+   - Snyk / SonarQube Code Security: $45,000
+   - Datadog APM & Cloud SIEM Monitoring: $110,000
+   - CyberShield MDR Retainer: $185,000
+   - SSL/TLS wildcard and enterprise certs: $40,000
+
+4. Contingency & Incident Response Reserve ($140,000):
+   - Zero-day vulnerability remediation emergency fund: $140,000
+
+VARIANCE ANALYSIS:
+- Overall budget represents a +14.2% YoY increase due to expanding compliance mandates and GPU cluster sizing for adaptive scanning.

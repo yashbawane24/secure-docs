@@ -16,7 +16,7 @@ const pendingOtps = new Map<string, { otp: string; expires: number; userId: stri
  * Step 1: Validate credentials, generate OTP
  */
 router.post('/login', async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email, password, portalRole } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required.' });
@@ -24,27 +24,59 @@ router.post('/login', async (req: Request, res: Response) => {
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
-    return res.status(401).json({ error: 'Invalid credentials.' });
+    return res.status(401).json({ error: 'Invalid email or password.' });
   }
 
   const isMatch = await bcrypt.compare(password, user.passwordHash);
   if (!isMatch) {
-    return res.status(401).json({ error: 'Invalid credentials.' });
+    return res.status(401).json({ error: 'Invalid email or password.' });
   }
 
-  // Generate 6-digit mock OTP
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const expires = Date.now() + 5 * 60 * 1000; // 5 mins
+  // Strict Portal Role Authorization Verification
+  if (portalRole) {
+    if (portalRole === 'ADMIN' && user.role !== 'ADMIN') {
+      return res.status(403).json({
+        error: `Access Denied: Your account role is ${user.role}. You are NOT authorized to log in through the Administrator Portal. Please switch to the ${user.role === 'MANAGER' ? 'Manager' : 'Employee'} Portal.`
+      });
+    }
 
-  pendingOtps.set(user.email, { otp, expires, userId: user.id });
+    if (portalRole === 'MANAGER' && user.role !== 'MANAGER' && user.role !== 'ADMIN') {
+      return res.status(403).json({
+        error: `Access Denied: Your account role is ${user.role}. You are NOT authorized to log in through the Manager Portal. Please switch to the Employee Portal.`
+      });
+    }
 
-  console.log(`[AUTH OTP BANNER] 🔐 Security OTP for ${user.email}: ${otp}`);
+    if (portalRole === 'EMPLOYEE' && user.role !== 'EMPLOYEE' && user.role !== 'ADMIN') {
+      return res.status(403).json({
+        error: `Access Denied: Your account role is ${user.role}. Please log in through your designated ${user.role === 'MANAGER' ? 'Manager' : 'External'} Portal.`
+      });
+    }
+  }
+
+  const token = jwt.sign(
+    {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      trustLevel: user.trustLevel,
+      orgId: user.orgId
+    },
+    JWT_SECRET,
+    { expiresIn: '24h' }
+  );
 
   return res.json({
-    message: 'Credentials verified. OTP sent to user email.',
-    email: user.email,
-    requiresOtp: true,
-    mockOtpBanner: otp // Provided in response for easy UX testing
+    message: 'Login successful.',
+    token,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      trustLevel: user.trustLevel,
+      orgId: user.orgId
+    }
   });
 });
 

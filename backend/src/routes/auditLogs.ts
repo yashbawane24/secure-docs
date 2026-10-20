@@ -8,22 +8,43 @@ const prisma = new PrismaClient();
 
 /**
  * GET /api/audit-logs
- * Filterable security audit logs (Manager & Admin access)
+ * Security audit logs: Admins & Managers see all; Employees see their own activity stream
  */
-router.get('/', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req: AuthRequest, res: Response) => {
+router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
   const { action, search, limit } = req.query;
+  const userId = req.user!.id;
+  const userRole = req.user!.role;
 
   const whereClause: any = {};
+
+  // Restrict standard users to their own actions or actions targeting their documents
+  if (userRole !== 'ADMIN' && userRole !== 'MANAGER') {
+    whereClause.OR = [
+      { actorId: userId },
+      { document: { ownerId: userId } }
+    ];
+  }
+
   if (action) {
     whereClause.action = String(action);
   }
 
   if (search) {
-    whereClause.OR = [
+    const searchFilter = [
       { actor: { name: { contains: String(search) } } },
       { actor: { email: { contains: String(search) } } },
       { document: { title: { contains: String(search) } } }
     ];
+
+    if (whereClause.OR) {
+      whereClause.AND = [
+        { OR: whereClause.OR },
+        { OR: searchFilter }
+      ];
+      delete whereClause.OR;
+    } else {
+      whereClause.OR = searchFilter;
+    }
   }
 
   const logs = await prisma.auditLog.findMany({

@@ -1,0 +1,32 @@
+MASTER SERVICES AGREEMENT (MSA) — VENDOR CONTRACT
+Contract Reference: MSA-2026-VND-7719
+Client Organization: SecureDocs AI Enterprise Inc.
+Vendor Organization: CyberShield Defense Systems LLC
+Contract Value: $420,000 USD / Annual Retainer
+Contract Manager: Marcus Vance (manager@securedocs.ai)
+Effective Period: October 1, 2026 – September 30, 2027
+
+TERMS AND CONDITIONS SUMMARY:
+1. Scope of Services:
+   Vendor shall provide 24/7 Managed Detection and Response (MDR), external perimeter penetration testing, and compliance reporting against SOC2 Type II, ISO 27001, and HIPAA benchmarks.
+
+2. SLA & Penalty Structure:
+   - Critical (P0) Severity Response Time: < 15 minutes.
+   - For every 30 minutes of delay beyond SLA, Vendor shall credit 2.5% of the monthly retainer billing back to Client.
+   - Uptime Guarantee: 99.99% system availability.
+
+3. Payment Terms & Bank Wire Instructions:
+   - Invoicing Frequency: Net 30 days from end of each quarter.
+   - Wire Transfer Routing:
+     Bank Name: JPMorgan Chase Bank, N.A. (New York)
+     Account Beneficiary: CyberShield Defense Systems LLC
+     Routing Transit Number: 021000021
+     Account Number: 884719203912
+     SWIFT / BIC: CHASUS33XXX
+
+4. Confidentiality & Non-Disclosure:
+   All proprietary algorithms, scanning patterns, and customer documents shared under this agreement constitute strictly Confidential Information.
+
+Signatures:
+Client Representative: Marcus Vance (Security Manager)
+Vendor Representative: David Miller (Managing Director, CyberShield)

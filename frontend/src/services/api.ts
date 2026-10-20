@@ -29,7 +29,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
 
 export const api = {
   // Auth
-  login: (data: { email: string; password: string }) => fetchWithAuth('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
+  login: (data: { email: string; password: string; portalRole?: string }) => fetchWithAuth('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   verifyOtp: (data: { email: string; otp: string }) => fetchWithAuth('/auth/verify-otp', { method: 'POST', body: JSON.stringify(data) }),
   register: (data: any) => fetchWithAuth('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
   getMe: () => fetchWithAuth('/auth/me'),
@@ -59,5 +59,44 @@ export const api = {
 
   // Policies
   getPolicies: () => fetchWithAuth('/policies'),
-  updatePolicy: (id: string, data: any) => fetchWithAuth(`/policies/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+  updatePolicy: (id: string, data: any) => fetchWithAuth(`/policies/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  // Secure Authenticated Download
+  downloadDocument: async (id: string, mode: 'encrypted' | 'decrypted' = 'encrypted') => {
+    const token = localStorage.getItem('securedocs_token');
+    const url = `${API_BASE}/documents/${id}/download?mode=${mode}&token=${encodeURIComponent(token || '')}`;
+    const response = await fetch(url, {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      }
+    });
+
+    if (!response.ok) {
+      let errMessage = 'Failed to download file';
+      try {
+        const errJson = await response.json();
+        errMessage = errJson.error || errMessage;
+      } catch {}
+      throw new Error(errMessage);
+    }
+
+    const blob = await response.blob();
+    const contentDisposition = response.headers.get('content-disposition');
+    let filename = `document-${id}.${mode === 'encrypted' ? 'pdf' : 'dat'}`;
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename="?([^";]+)"?/);
+      if (match && match[1]) {
+        filename = match[1];
+      }
+    }
+
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(blobUrl);
+    document.body.removeChild(a);
+  }
 };

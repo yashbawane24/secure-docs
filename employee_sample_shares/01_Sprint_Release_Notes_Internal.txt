@@ -1,0 +1,25 @@
+SECUREDOCS AI - ENGINEERING SPRINT RELEASE NOTES
+Sprint Cycle: Sprint 44 (v2.14.0)
+Owner / Author: Sarah Chen (Senior Developer)
+Team: Core Platform Engineering
+Classification: INTERNAL WORKSPACE USE
+
+SUMMARY OF CHANGES:
+1. Microservice Auth Service:
+   - Upgraded JWT verification token payload to include user role and workspace context.
+   - Refactored session validation middleware on internal endpoints:
+     Internal URI: https://auth-internal.securedocs.corp/v1/sessions
+     Telemetry URI: https://telemetry-svc.securedocs.corp/v1/traces
+
+2. Adaptive Encryption Layer:
+   - Enabled automated AES-256-GCM buffer encryption for documents exceeding 60% leak probability.
+   - Integrated dynamic redaction algorithms for Aadhaar, PAN, SSN, and Credit Card tokens.
+
+3. Testing & CI Pipeline:
+   - All 48 unit tests passing across Jest and Prisma integration suites.
+   - Docker container build time reduced by 18% using multi-stage alpine caching.
+
+DEPLOYMENT INSTRUCTIONS:
+- Reviewer: Marcus Vance (Security Manager)
+- Target Cluster: prod-us-east-1-cluster
+- Rollout Strategy: 10% Canary followed by 100% staggered rollout.

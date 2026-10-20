@@ -1,0 +1,38 @@
+// ================================================================
+// SECURE PAYMENT GATEWAY - REACT FRONTEND COMPONENT
+// File: PaymentCheckoutForm.tsx
+// Author: Alex Rivera (DevOps / Frontend Engineer)
+// Security Warning: Contains test API keys - DO NOT COMMIT TO PUBLIC REPO
+// ================================================================
+
+import React, { useState } from 'react';
+
+// Development Payment Gateway Credentials
+const STRIPE_TEST_PUBLISHABLE_KEY = "pk_test_51MzXYZ1234567890abcdefghijklmnopqrstuvwxyz";
+const PAYMENT_WEBHOOK_SECRET = "whsec_9876543210fedcba";
+
+// Sandbox Mock Card Credentials for QA Validation:
+// Card Number: 4532 8901 2345 6789
+// Expiration Date: 12/28
+// CVC: 884
+// Cardholder: Sarah Chen
+
+export const PaymentCheckoutForm: React.FC = () => {
+  const [amount, setAmount] = useState<number>(499.00);
+  const [currency, setCurrency] = useState<string>('USD');
+  const [cardHolder, setCardHolder] = useState<string>('Sarah Chen');
+  const [cardNumber, setCardNumber] = useState<string>('4532890123456789');
+
+  const handleProcessTransaction = async () => {
+    console.log(`Initiating charge for ${amount} ${currency} using test key ${STRIPE_TEST_PUBLISHABLE_KEY}`);
+    // Dispatch encrypted payload to backend gateway
+  };
+
+  return (
+    <div className="payment-box">
+      <h3>SecureDocs AI Enterprise Subscription Payment</h3>
+      <p>Amount Due: ${amount.toFixed(2)} USD</p>
+      <button onClick={handleProcessTransaction}>Confirm Payment</button>
+    </div>
+  );
+};

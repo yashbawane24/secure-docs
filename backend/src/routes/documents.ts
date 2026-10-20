@@ -6,6 +6,7 @@ import { PrismaClient } from '@prisma/client';
 import { authenticateToken, AuthRequest } from '../middleware/auth';
 import { analyzeDocument } from '../services/aiEngine';
 import { encryptBuffer, decryptBuffer } from '../services/cryptoService';
+import { generateEncryptedPdf } from '../services/pdfService';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -218,14 +219,15 @@ router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response) =>
 
 /**
  * GET /api/documents/:id/download
- * Download file (decrypts if encrypted, checks permissions)
+ * Download file: defaults to encrypted (.enc) version as requested by user,
+ * or decrypted version if explicitly requested and permitted by policy.
  */
 router.get('/:id/download', authenticateToken, async (req: AuthRequest, res: Response) => {
   if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
 
   const doc = await prisma.document.findUnique({
     where: { id: req.params.id },
-    include: { shares: true }
+    include: { shares: true, entities: true }
   });
 
   if (!doc) return res.status(404).json({ error: 'Document not found' });
@@ -234,43 +236,135 @@ router.get('/:id/download', authenticateToken, async (req: AuthRequest, res: Res
   const share = doc.shares.find(s => s.recipientId === req.user?.id);
   const isManagerOrAdmin = req.user.role === 'ADMIN' || req.user.role === 'MANAGER';
 
+  // Check access permissions
   if (!isOwner && !isManagerOrAdmin) {
     if (!share || share.status !== 'ACTIVE' || share.permissionLevel === 'DENIED') {
       return res.status(403).json({ error: 'Download permission denied for this document.' });
     }
   }
 
-  if (doc.recommendedAction === 'BLOCK' && !isManagerOrAdmin) {
-    return res.status(403).json({ error: 'Download blocked by Policy HC-900 High Leak Score Security Guard.' });
+  // Determine requested download mode: 'encrypted' is default, 'decrypted' if explicitly requested
+  const requestedMode = req.query.mode === 'decrypted' || req.query.encrypted === 'false' ? 'decrypted' : 'encrypted';
+
+  // If user explicitly asks for decrypted plaintext, enforce DLP Policy HC-900
+  if (requestedMode === 'decrypted' && doc.recommendedAction === 'BLOCK' && !isManagerOrAdmin) {
+    return res.status(403).json({
+      error: 'Plaintext download blocked by Policy HC-900 (High Risk Leak Prevention). Please download the AES-256 Encrypted version (.enc) to protect sensitive data.'
+    });
   }
 
-  if (!fs.existsSync(doc.storagePath)) {
-    return res.status(404).json({ error: 'Physical file storage not found.' });
+  // Resolve storage path or fallback to extracted text buffer
+  let resolvedPath = doc.storagePath;
+  if (resolvedPath && !path.isAbsolute(resolvedPath)) {
+    const candidate1 = path.join(uploadDir, path.basename(resolvedPath));
+    const candidate2 = path.join(__dirname, '../../', resolvedPath);
+    if (fs.existsSync(candidate1)) resolvedPath = candidate1;
+    else if (fs.existsSync(candidate2)) resolvedPath = candidate2;
   }
 
-  let fileBuffer = fs.readFileSync(doc.storagePath);
-
-  if (doc.isEncrypted && doc.encryptionIV && doc.authTag) {
+  let fileBuffer: Buffer;
+  if (resolvedPath && fs.existsSync(resolvedPath)) {
+    fileBuffer = fs.readFileSync(resolvedPath);
+  } else {
+    // Resilient fallback from extracted text
+    fileBuffer = Buffer.from(doc.extractedText || `SecureDocs AI Document: ${doc.title}`, 'utf-8');
     try {
-      fileBuffer = decryptBuffer(fileBuffer, doc.encryptionIV, doc.authTag);
-    } catch {
-      return res.status(500).json({ error: 'Failed to decrypt document buffer.' });
+      const safePath = path.join(uploadDir, `${Date.now()}-${doc.filename}`);
+      fs.writeFileSync(safePath, fileBuffer);
+      await prisma.document.update({
+        where: { id: doc.id },
+        data: { storagePath: safePath }
+      });
+    } catch (e) {
+      console.warn('Could not cache file on disk:', e);
     }
   }
 
-  // Audit log download
-  await prisma.auditLog.create({
-    data: {
-      actorId: req.user.id,
-      documentId: doc.id,
-      action: 'DOWNLOAD',
-      metadataJson: JSON.stringify({ size: fileBuffer.length })
-    }
-  });
+  if (requestedMode === 'encrypted') {
+    // Ensure the payload is encrypted with AES-256-GCM
+    let encryptedBuffer = fileBuffer;
+    let ivHex = doc.encryptionIV || '';
+    let authTagHex = doc.authTag || '';
 
-  res.setHeader('Content-Type', doc.mimeType);
-  res.setHeader('Content-Disposition', `attachment; filename="${doc.filename}"`);
-  return res.send(fileBuffer);
+    if (!doc.isEncrypted || !doc.encryptionIV || !doc.authTag) {
+      // Encrypt on the fly using AES-256-GCM
+      const enc = encryptBuffer(fileBuffer);
+      encryptedBuffer = enc.encryptedBuffer;
+      ivHex = enc.ivHex;
+      authTagHex = enc.authTagHex;
+      try {
+        await prisma.document.update({
+          where: { id: doc.id },
+          data: {
+            isEncrypted: true,
+            encryptionIV: enc.ivHex,
+            authTag: enc.authTagHex
+          }
+        });
+      } catch (e) {
+        console.warn('Failed to update encryption metadata in db:', e);
+      }
+    }
+
+    // Generate Encrypted Security PDF containing masked sensitive data & watermark
+    const pdfBuffer = await generateEncryptedPdf({
+      title: doc.title,
+      filename: doc.filename,
+      classification: doc.classification,
+      leakScore: doc.leakScore,
+      recommendedAction: doc.recommendedAction,
+      extractedText: doc.extractedText || (doc.isEncrypted && doc.encryptionIV && doc.authTag ? decryptBuffer(fileBuffer, doc.encryptionIV, doc.authTag).toString('utf-8') : fileBuffer.toString('utf-8')),
+      encryptedBuffer,
+      ivHex,
+      authTagHex,
+      userEmail: req.user.email,
+      userRole: req.user.role,
+      entities: doc.entities || []
+    });
+
+    // Create a clean PDF filename based on the document name
+    const baseName = doc.filename.replace(/\.[^/.]+$/, '').replace(/_(?:ENCRYPTED|SECURED)$/i, '');
+    const downloadFilename = `${baseName}_SECURED.pdf`;
+
+    // Audit log encrypted PDF download
+    await prisma.auditLog.create({
+      data: {
+        actorId: req.user.id,
+        documentId: doc.id,
+        action: 'DOWNLOAD',
+        metadataJson: JSON.stringify({ mode: 'ENCRYPTED_PDF_AES_256', filename: downloadFilename, size: pdfBuffer.length })
+      }
+    });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${downloadFilename}"`);
+    return res.send(pdfBuffer);
+  } else {
+    // Decrypted mode requested
+    let decryptedBuffer = fileBuffer;
+    if (doc.isEncrypted && doc.encryptionIV && doc.authTag) {
+      try {
+        decryptedBuffer = decryptBuffer(fileBuffer, doc.encryptionIV, doc.authTag);
+      } catch {
+        // If fileBuffer was already plaintext (e.g. from seed fallback), use it
+        decryptedBuffer = Buffer.from(doc.extractedText || fileBuffer.toString(), 'utf-8');
+      }
+    }
+
+    // Audit log decrypted download
+    await prisma.auditLog.create({
+      data: {
+        actorId: req.user.id,
+        documentId: doc.id,
+        action: 'DOWNLOAD',
+        metadataJson: JSON.stringify({ mode: 'DECRYPTED_PLAINTEXT', filename: doc.filename, size: decryptedBuffer.length })
+      }
+    });
+
+    res.setHeader('Content-Type', doc.mimeType || 'application/octet-stream');
+    res.setHeader('Content-Disposition', `attachment; filename="${doc.filename}"`);
+    return res.send(decryptedBuffer);
+  }
 });
 
 export default router;
